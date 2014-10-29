@@ -406,6 +406,20 @@ module Dnsruby
     add_pair("SHA-1", 1)
   end
 
+
+  class Edns0OptionCodes < CodeMapper
+    # From http://www.iana.org/assignments/dns-parameters/dns-parameters.xml#dns-parameters-13:
+    LLQ                = 1
+    UL                 = 2
+    NSID               = 3
+    DAU                = 5
+    DHU                = 6
+    N3U                = 7
+    EDNS_CLIENT_SUBNET = 8
+    EDNS_EXPIRE        = 9
+    update
+  end
+
   #An error raised while querying for a resource
   class ResolvError < StandardError
   end

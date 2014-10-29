@@ -194,7 +194,7 @@ module Dnsruby
 
       def edns_client_subnet
         return nil if @options.nil?
-        subnet_option = @options.detect { |option| option.code == 8 }
+        subnet_option = @options.detect { |option| option.code == Edns0OptionCodes::EDNS_CLIENT_SUBNET }
         subnet_option ? get_client_subnet(subnet_option) : nil
       end
 
@@ -202,7 +202,7 @@ module Dnsruby
         ret = "OPT pseudo-record : payloadsize #{payloadsize}, xrcode #{xrcode.code}, version #{version}, flags #{flags}\n"
         if @options
           @options.each do |opt|
-            if opt.code == 8
+            if opt.code == Edns0OptionCodes::EDNS_CLIENT_SUBNET
               ret = ret + "CLIENT-SUBNET: #{get_client_subnet(opt)}"
             else
               ret = ret + " " + opt.to_s
