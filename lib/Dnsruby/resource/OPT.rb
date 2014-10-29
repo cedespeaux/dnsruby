@@ -14,7 +14,7 @@
 #limitations under the License.
 #++
 module Dnsruby
-  class RR   
+  class RR
     #Class for EDNS pseudo resource record OPT.
     #This class is effectively internal to Dnsruby
     #See RFC 2671, RFC 2435 Section 3
@@ -34,13 +34,13 @@ module Dnsruby
       def initialize(*args)
         @type = Types.new('OPT')
         @ttl = nil
-        
+
         @options=nil
         if (args.length > 0)
           self.payloadsize=(args[0])
           if (args.length > 1)
             self.flags=(args[1])
-            if (args.length > 2) 
+            if (args.length > 2)
               self.options=(args[2])
             else
               self.options=nil
@@ -52,7 +52,7 @@ module Dnsruby
           self.payloadsize=0
         end
       end
-      
+
       # From RFC 2671 :
       # 4.3. The fixed part of an OPT RR is structured as follows:
       #
@@ -64,7 +64,7 @@ module Dnsruby
       #     TTL          u_int32_t      extended RCODE and flags
       #     RDLEN        u_int16_t      describes RDATA
       #     RDATA        octet stream   {attribute,value} pairs
-      
+
       #4.6. The extended RCODE and flags (which OPT stores in the RR TTL field)
       #are structured as follows:
       #
@@ -82,7 +82,7 @@ module Dnsruby
       #   VERSION         Indicates the implementation level of whoever sets
       #                   it.  Full conformance with this specification is
       #                   indicated by version "0." 
-      
+
       def flags_from_ttl
         if (@ttl)
           return [@ttl].pack("N")
@@ -90,40 +90,40 @@ module Dnsruby
           return [0].pack("N")
         end
       end
-      
+
       def xrcode
         return ExtendedRCode.new(flags_from_ttl[0, 1].unpack("C")[0])
       end
-      
+
       def xrcode=(c)
         code = ExtendedRCode.new(c)
         @ttl = (code.code << 24) + (version() << 16) + flags()
       end
-      
+
       def version
         return flags_from_ttl[1, 1].unpack("C")[0]
       end
-      
+
       def version=(code)
         @ttl = (xrcode().code << 24) + (code << 16) + flags()
       end
-      
+
       def flags
         return flags_from_ttl[2, 2].unpack("n")[0]
       end
-      
+
       def flags=(code)
         set_flags(code)
       end
-      
+
       def set_flags(code) # Should always be zero
         @ttl = (xrcode().code << 24) + (version() << 16) + code
       end
-      
+
       def dnssec_ok
         return ((flags() & DO_BIT) == DO_BIT)
       end
-      
+
       def dnssec_ok=(on)
         if (on)
           set_flags(flags() | DO_BIT)
@@ -131,15 +131,15 @@ module Dnsruby
           set_flags(flags() & (~DO_BIT))
         end
       end
-      
+
       def payloadsize
         return @klass.code
       end
-      
+
       def payloadsize=(size)
         self.klass=size
       end
-      
+
       def options(args)
         if (args==nil)
           return @options
@@ -154,30 +154,65 @@ module Dnsruby
           return ret
         end
       end
-      
+
       def options=(options)
         @options = options
       end
-      
+
       def from_data(data)
         @options = data
       end
-      
+
       def from_string(input)
         raise NotImplementedError
       end
-      
+
+      def get_ip_addr(opt, family)
+        pad_format_string = family == 1 ? 'x3C' : 'x15C'
+        ip_addr = [0].pack(pad_format_string)
+
+        num_to_copy = opt.data.size - 5
+        ip_addr[0..num_to_copy] = opt.data[4..(num_to_copy + 4)]
+        ip_addr
+      end
+
+      def get_client_subnet(opt)
+        family = opt.data[1].unpack('C')[0]
+        return "Unsupported(family=#{family})" unless[1,2].include?(family)
+
+        source_netmask = opt.data[2].unpack('C')[0]
+        scope_netmask = opt.data[3].unpack('C')[0]
+
+        case family
+          when 1
+            return "#{IPAddr::ntop(get_ip_addr(opt,family))}/#{source_netmask}/#{scope_netmask}"
+          when 2
+            new_ipv6 = IPAddr.new(IPAddr::ntop(get_ip_addr(opt,family)), Socket::AF_INET6)
+            return "#{new_ipv6}/#{source_netmask}/#{scope_netmask}"
+        end
+      end
+
+      def edns_client_subnet
+        return nil if @options.nil?
+        subnet_option = @options.detect { |option| option.code == 8 }
+        subnet_option ? get_client_subnet(subnet_option) : nil
+      end
+
       def to_s
-        ret = "OPT pseudo-record : payloadsize #{payloadsize}, xrcode #{xrcode.code}, version #{version}, flags #{flags}"
+        ret = "OPT pseudo-record : payloadsize #{payloadsize}, xrcode #{xrcode.code}, version #{version}, flags #{flags}\n"
         if @options
           @options.each do |opt|
-            ret = ret + " " + opt.to_s
+            if opt.code == 8
+              ret = ret + "CLIENT-SUBNET: #{get_client_subnet(opt)}"
+            else
+              ret = ret + " " + opt.to_s
+            end
           end
         end
         ret = ret + "\n"
         return ret
       end
-      
+
       def encode_rdata(msg, canonical=false)
         if (@options)
           @options.each do |opt|
@@ -187,7 +222,7 @@ module Dnsruby
           end
         end
       end
-      
+
       def self.decode_rdata(msg)#:nodoc: all
         if (msg.has_remaining)
           options = []
@@ -198,9 +233,9 @@ module Dnsruby
             options.push(Option.new(code, data))
           end
         end
-        return self.new([options])
+        return self.new(0, 0, options)
       end
-      
+
       class Option
         attr_accessor :code, :data
         def initialize(code, data)
