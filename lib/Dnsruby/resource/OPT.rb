@@ -168,7 +168,7 @@ module Dnsruby
       end
 
       def get_ip_addr(opt, family)
-        pad_format_string = family == 1 ? 'x3C' : 'x15C'
+        pad_format_string = family == AddressFamilyNumbers::IPV4 ? 'x3C' : 'x15C'
         ip_addr = [0].pack(pad_format_string)
 
         num_to_copy = opt.data.size - 5
@@ -177,16 +177,18 @@ module Dnsruby
       end
 
       def get_client_subnet(opt)
+        ipv4 = AddressFamilyNumbers::IPV4
+        ipv6 = AddressFamilyNumbers::IPV6
         family = opt.data[1].unpack('C')[0]
-        return "Unsupported(family=#{family})" unless[1,2].include?(family)
+        return "Unsupported(family=#{family})" unless[ipv4, ipv6].include?(family)
 
         source_netmask = opt.data[2].unpack('C')[0]
         scope_netmask = opt.data[3].unpack('C')[0]
 
         case family
-          when AddressFamilyNumbers::IPV4
+          when ipv4
             return "#{IPAddr::ntop(get_ip_addr(opt,family))}/#{source_netmask}/#{scope_netmask}"
-          when AddressFamilyNumbers::IPV6
+          when ipv6
             new_ipv6 = IPAddr.new(IPAddr::ntop(get_ip_addr(opt,family)), Socket::AF_INET6)
             return "#{new_ipv6}/#{source_netmask}/#{scope_netmask}"
         end
