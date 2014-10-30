@@ -184,9 +184,9 @@ module Dnsruby
         scope_netmask = opt.data[3].unpack('C')[0]
 
         case family
-          when 1
+          when AddressFamilyNumbers::IPV4
             return "#{IPAddr::ntop(get_ip_addr(opt,family))}/#{source_netmask}/#{scope_netmask}"
-          when 2
+          when AddressFamilyNumbers::IPV6
             new_ipv6 = IPAddr.new(IPAddr::ntop(get_ip_addr(opt,family)), Socket::AF_INET6)
             return "#{new_ipv6}/#{source_netmask}/#{scope_netmask}"
         end

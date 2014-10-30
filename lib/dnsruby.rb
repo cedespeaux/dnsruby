@@ -407,8 +407,8 @@ module Dnsruby
   end
 
 
+  # http://www.iana.org/assignments/dns-parameters/dns-parameters.xml#dns-parameters-13:
   class Edns0OptionCodes < CodeMapper
-    # From http://www.iana.org/assignments/dns-parameters/dns-parameters.xml#dns-parameters-13:
     LLQ                = 1
     UL                 = 2
     NSID               = 3
@@ -417,6 +417,15 @@ module Dnsruby
     N3U                = 7
     EDNS_CLIENT_SUBNET = 8
     EDNS_EXPIRE        = 9
+    update
+  end
+
+
+  # http://www.iana.org/assignments/address-family-numbers/address-family-numbers.xhtml
+  class AddressFamilyNumbers < CodeMapper
+    # There are many more than these but these are the only ones we're using now.
+    IPV4      = 1
+    IPV6      = 2
     update
   end
 
