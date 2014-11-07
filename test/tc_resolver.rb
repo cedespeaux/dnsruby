@@ -285,4 +285,16 @@ class TestResolver < Minitest::Test
   def test_eventtype_api
     #  @TODO@ TEST THE Resolver::EventType interface!
   end
+
+  def test_rd_not_overwritten
+    message = Message.new(GOOD_DOMAIN_NAME)
+    message.header.rd = false
+    assert(! message.header.rd)
+    resolver = Resolver.new
+    raise "Header rd flag was overwritten to true in #{__FILE__}:#{__LINE__}" if message.header.rd
+    _response = resolver.send_message(message)
+    puts "Header rd: #{message.header.rd}"
+    raise "Header rd flag was overwritten to true in #{__FILE__}:#{__LINE__}" if message.header.rd
+    assert(! message.header.rd, "Header rd flag was overwritten to true")
+  end
 end

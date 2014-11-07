@@ -240,10 +240,12 @@ module Dnsruby
     def send_message(message)
       Dnsruby.log.debug{'Resolver : sending message'}
       q = Queue.new
+      raise "Header rd flag was overwritten to true in #{__FILE__}:#{__LINE__}" if message.header.rd
       send_async(message, q)
+      raise "Header rd flag was overwritten to true in #{__FILE__}:#{__LINE__}" if message.header.rd
 
       _id, result, error = q.pop
-
+      raise "Header rd flag was overwritten to true in #{__FILE__}:#{__LINE__}" if message.header.rd
       if error
         raise error
       else
@@ -363,14 +365,17 @@ module Dnsruby
       unless @resolver_ruby # @TODO@ Synchronize this?
         @resolver_ruby = ResolverRuby.new(self)
       end
+      raise "Header rd flag was overwritten to true in #{__FILE__}:#{__LINE__}" if msg.header.rd
       #       }
       client_query_id = @resolver_ruby.send_async(msg, client_queue, client_query_id)
+      raise "Header rd flag was overwritten to true in #{__FILE__}:#{__LINE__}" if msg.header.rd
       if @single_resolvers.length == 0
         Thread.start {
           sleep(@query_timeout == 0 ? 1 : @query_timeout)
           client_queue.push([client_query_id, nil, ResolvTimeout.new('Query timed out - no nameservers configured')])
         }
       end
+      raise "Header rd flag was overwritten to true in #{__FILE__}:#{__LINE__}" if msg.header.rd
       client_query_id
     end
 
@@ -842,6 +847,8 @@ module Dnsruby
         return
       end
 
+      raise "Header rd flag was overwritten to true in #{__FILE__}:#{__LINE__}" if msg.header.rd
+
       tick_needed = false
       #  add to our data structures
       #       @mutex.synchronize{
@@ -855,6 +862,7 @@ module Dnsruby
         end
         outstanding = []
         @query_list[client_query_id]=[msg, client_queue, q, outstanding]
+        raise "Header rd flag was overwritten to true in #{__FILE__}:#{__LINE__}" if msg.header.rd
 
         query_timeout = Time.now + @parent.query_timeout
         if @parent.query_timeout == 0
@@ -862,12 +870,16 @@ module Dnsruby
         end
         @timeouts[client_query_id] = [query_timeout, generate_timeouts]
       }
+      raise "Header rd flag was overwritten to true in #{__FILE__}:#{__LINE__}" if msg.header.rd
 
       #  Now do querying stuff using SingleResolver
       #  All this will be handled by the tick method (if we have 0 as the first timeout)
       st = SelectThread.instance
       st.add_observer(q, self)
+      raise "Header rd flag was overwritten to true in #{__FILE__}:#{__LINE__}" if msg.header.rd
       tick if tick_needed
+      raise "Header rd flag was overwritten to true in #{__FILE__}:#{__LINE__}" if msg.header.rd
+
       client_query_id
     end
 
@@ -954,11 +966,16 @@ module Dnsruby
               outstanding.push(id)
               timeouts_done.push(timeout)
               timeouts.delete(timeout)
+              raise "Header rd flag was overwritten to true in #{__FILE__}:#{__LINE__}" if msg.header.rd
 
               #  Pick a new QID here @TODO@ !!!
               #               msg.header.id = rand(65535);
               #               print "New query : #{new_msg}\n"
+
+              puts "res is: #{res}"
               res.send_async(msg, select_queue, id)
+              raise "Header rd flag was overwritten to true in #{__FILE__}:#{__LINE__}" if msg.header.rd
+
             else
               break
             end
