@@ -297,4 +297,16 @@ class TestResolver < Minitest::Test
     raise "Header rd flag was overwritten to true in #{__FILE__}:#{__LINE__}" if message.header.rd
     assert(! message.header.rd, "Header rd flag was overwritten to true")
   end
+
+  def test_rd_not_overwritten_with_send_plain_message
+    message = Message.new(GOOD_DOMAIN_NAME)
+    message.header.rd = false
+    assert(! message.header.rd)
+    resolver = Resolver.new
+    raise "Header rd flag was overwritten to true in #{__FILE__}:#{__LINE__}" if message.header.rd
+    _response = resolver.send_plain_message(message)
+    puts "Header rd: #{message.header.rd}"
+    raise "Header rd flag was overwritten to true in #{__FILE__}:#{__LINE__}" if message.header.rd
+    assert(! message.header.rd, "Header rd flag was overwritten to true")
+  end
 end
