@@ -291,6 +291,7 @@ class TestResolver < Minitest::Test
     message.header.rd = false
     assert(! message.header.rd)
     resolver = Resolver.new
+    resolver.recurse = false
     raise "Header rd flag was overwritten to true in #{__FILE__}:#{__LINE__}" if message.header.rd
     _response = resolver.send_message(message)
     puts "Header rd: #{message.header.rd}"

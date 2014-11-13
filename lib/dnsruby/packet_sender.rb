@@ -305,7 +305,7 @@ module Dnsruby
       if (!client_query_id)
         client_query_id = Time.now + rand(10000) # is this safe?!
       end
-      raise "Header rd flag was overwritten to true in #{__FILE__}:#{__LINE__}" if msg.header.rd
+      # raise "Header rd flag was overwritten to true in #{__FILE__}:#{__LINE__}" if msg.header.rd
 
       query_packet = make_query_packet(msg, use_tcp)
       raise "Header rd flag was overwritten to true in #{__FILE__}:#{__LINE__}" if msg.header.rd
@@ -329,7 +329,7 @@ module Dnsruby
           return client_query_id
         end
       end
-      raise "Header rd flag was overwritten to true in #{__FILE__}:#{__LINE__}" if msg.header.rd
+      # raise "Header rd flag was overwritten to true in #{__FILE__}:#{__LINE__}" if msg.header.rd
 
       #  Otherwise, run the query
       if (udp_packet_size < query_packet.length)
@@ -343,9 +343,9 @@ module Dnsruby
         Dnsruby.log.debug{"Query packet length exceeds max UDP packet size - using TCP"}
         use_tcp = true
       end
-      raise "Header rd flag was overwritten to true in #{__FILE__}:#{__LINE__}" if msg.header.rd
+      # raise "Header rd flag was overwritten to true in #{__FILE__}:#{__LINE__}" if msg.header.rd
       send_dnsruby(query_packet, msg, client_query_id, client_queue, use_tcp)
-      raise "Header rd flag was overwritten to true in #{__FILE__}:#{__LINE__}" if msg.header.rd
+      # raise "Header rd flag was overwritten to true in #{__FILE__}:#{__LINE__}" if msg.header.rd
       return client_query_id
       #       end
     end
@@ -598,13 +598,13 @@ module Dnsruby
     #  Prepare the packet for sending
     def make_query_packet(packet, use_tcp = @use_tcp) #:nodoc: all
 
-      raise "Header rd flag was overwritten to true in #{__FILE__}:#{__LINE__}" if packet.header.rd
+      # raise "Header rd flag was overwritten to true in #{__FILE__}:#{__LINE__}" if packet.header.rd
 
       if (!packet.send_raw) # Don't mess with this packet!
         if (packet.header.opcode == OpCode.QUERY || @recurse)
           packet.header.rd=@recurse
         end
-        raise "Header rd flag was overwritten to true in #{__FILE__}:#{__LINE__}" if packet.header.rd
+        # raise "Header rd flag was overwritten to true in #{__FILE__}:#{__LINE__}" if packet.header.rd
 
         #  Only do this if the packet has not been prepared already!
         if (@dnssec)
@@ -614,13 +614,13 @@ module Dnsruby
           #  @TODO@ What if an existing OPT RR is not big enough? Should we replace it?
           add_opt_rr(packet)
         end
-        raise "Header rd flag was overwritten to true in #{__FILE__}:#{__LINE__}" if packet.header.rd
+        # raise "Header rd flag was overwritten to true in #{__FILE__}:#{__LINE__}" if packet.header.rd
       end
 
       if (@tsig && !packet.signed?)
         @tsig.apply(packet)
       end
-      raise "Header rd flag was overwritten to true in #{__FILE__}:#{__LINE__}" if packet.header.rd
+      # raise "Header rd flag was overwritten to true in #{__FILE__}:#{__LINE__}" if packet.header.rd
       return packet.encode
     end
 
