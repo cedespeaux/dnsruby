@@ -1,5 +1,6 @@
 [![Build Status](https://travis-ci.org/alexdalitz/dnsruby.svg?branch=master)](https://travis-ci.org/alexdalitz/dnsruby)
 [![Coverage Status](https://img.shields.io/coveralls/alexdalitz/dnsruby.svg)](https://coveralls.io/r/alexdalitz/dnsruby?branch=master)
+[ ![Codeship Status for keithrbennett/dnsruby](https://codeship.com/projects/0b9d0060-4d07-0132-df74-5a56e8d5bc4a/status)](https://codeship.com/projects/47318)
 
 Dnsruby
 =======
